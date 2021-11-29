@@ -3,9 +3,11 @@ function xObject(obj) {
         return new xObject(obj);
     }
 
-    if (typeof obj === "string") {
+    var type = typeof obj;
+
+    if (type === "string") {
         this.el = document.getElementById(obj);
-    } else if (typeof obj === "object" && obj.innerHTML !== "undefined") {
+    } else if (type === "object" && obj.nodeType !== "undefined" && obj.nodeType === 1) {
         this.el = obj;
     } else {
         throw new Error("Argument is of wrong type");
@@ -14,13 +16,53 @@ function xObject(obj) {
     this._css = this.el.style;
 }
 
+/*** Event instance methods ***/ 
+xObject.prototype.addEvent = function(evt, fn) {
+    xObject.addEvent(this.el, evt, fn);
+
+    return this;
+};
+
+xObject.prototype.removeEvent = function(evt, fn) {
+    xObject.removeEvent(this.el, evt, fn);
+
+    return this;
+};
+
+xObject.prototype.click = function(fn) {
+    var that = this;
+
+    xObject.addEvent(this.el, "click", function(e) {
+        fn.call(that, e);
+    });
+
+    return this;
+}
+
+xObject.prototype.mouseover = function(fn) {
+    var that = this;
+
+    xObject.addEvent(this.el, "mouseover", function(e) {
+        fn.call(that, e);
+    });
+
+    return this;
+}
+
+/*** Event static methods ***/
 if (typeof addEventListener !== "undefined") {
     xObject.addEvent = function(obj, evt, fn) {
         obj.addEventListener(evt, fn, false);
-    }
+    };
+
+    xObject.removeEvent = function(obj, evt, fn) {
+        obj.removeEventListener(evt, fn, false);
+    };
 } else if (typeof attachEvent !== "undefined") {
     xObject.addEvent = function(obj, evt, fn) {
-        var handler = function() {
+        var fnHash = "e_" + evt + fn;
+        
+        obj[fnHash] = function() {
             var type = event.type,
                 relatedTarget = null;
 
@@ -28,7 +70,7 @@ if (typeof addEventListener !== "undefined") {
                 relatedTarget = (type === "mouseover") ? event.fromElement : event.toElement;
             }
 
-            fn({
+            fn.call(obj, {
                 target: event.srcElement,
                 type: type,
                 relatedTarget: relatedTarget,
@@ -42,14 +84,23 @@ if (typeof addEventListener !== "undefined") {
             });
         };
 
-        obj.attachEvent("on" + evt, handler);
+        obj.attachEvent("on" + evt, obj[fnHash]);
+    };
+
+    xObject.attachEvent = function(obj, evt, fn) {
+        var fnHash = "e_" + evt + fn;
+
+        if (typeof obj[fnHash] !== "undefined") {
+            obj.detachEvent("on" + evt, obj[fnHash]);
+            delete obj[fnHash];
+        }
     }
 } else {
     xObject.addEvent = function(obj, evt, fn) {
         obj["on" + evt] = fn;
-    }
+    };
+
+    xObject.removeEvent = function(obj, evt, fn) {
+        obj["on" + evt] = null;
+    };
 }
-
-xObject.removeEvent = function(obj, evt, fn) {
-
-};

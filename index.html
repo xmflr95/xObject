@@ -5,9 +5,19 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test</title>
-    <script src="xobject.js"></script>
+    <script src="xobject.js" type="text/javascript"></script>
 </head>
 <body>
-    <p id="text">test</p>
+    <div id="foo" class="foo">Hello, World!</div>
+
+    <script type="text/javascript">
+        var foo = xObject("foo");
+
+        foo.click(function(e) {
+            this._css.color = "red";
+            this._css.backgroundColor = "yellow";
+        });
+
+    </script>
 </body>
 </html>
