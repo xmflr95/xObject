@@ -12,10 +12,10 @@
 
     <script type="text/javascript">
         var foo = xObject("foo");
-
-        foo.click(function(e) {
-            this._css.color = "red";
-            this._css.backgroundColor = "yellow";
+        
+        foo.css({
+            color: "red",
+            "background-color": "navy"
         });
 
     </script>

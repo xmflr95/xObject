@@ -104,3 +104,53 @@ if (typeof addEventListener !== "undefined") {
         obj["on" + evt] = null;
     };
 }
+
+/* Style static methods */
+xObject.css = function(el, css, value) {
+    var cssType = typeof css,
+        valueType = typeof value,
+        elStyle = el.style;
+
+    if (cssType !== "undefined" && valueType === "undefined") {
+        if (cssType === "object") {
+            for (var prop in css) {
+                if (css.hasOwnProperty(prop)) {
+                    elStyle[toCamelCase(prop)] = css[prop];
+                }
+            }
+        } else if (cssType === "string") {
+            return getStyle(el, css);
+        } else {
+            throw { message: "Invalid paramters passed to css()" };
+        }
+    } else if (cssType === "string" && valueType === "string") {
+        elStyle[toCamelCase(css)] = value;
+    } else {
+        throw { message: "Invalid paramters passed to css()" };
+    }
+};
+
+/** Style instance method **/
+xObject.prototype.css = function(css, value) {
+    xObject.css(this.el, css, value) || this;
+};
+
+/** Helper Functions **/
+function toCamelCase(str) {
+    return str.replace(/-([a-z])/ig, function(all, letter) {
+        console.log(all, letter);
+        return letter.toUpperCase();
+    });
+}
+
+var getStyle = (function() {
+    if (typeof getComputedStyle !== "undefined") {
+        return function(el, cssProp) {
+            return getComputedStyle(el, null).getPropertyValue(cssProp);
+        };
+    } else {
+        return function(el, cssProp) {
+            return el.currentStyle[toCamelCase(cssProp)];
+        };
+    }
+}());
